@@ -65,8 +65,10 @@ namespace AWSServerless
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
+            loggerFactory.AddLambdaLogger(Configuration.GetLambdaLoggerOptions());
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -86,7 +88,7 @@ namespace AWSServerless
 
             app.UseRouting();
 
-            app.UseCors();
+            app.UseCors(AllowAll);
 
             app.UseAuthorization();
 
@@ -94,21 +96,12 @@ namespace AWSServerless
             {
                 endpoints.MapControllerRoute(
                         name: "default",
-                        pattern: "{controller}/{action=Index}/{id?}")
-                    .RequireCors(AllowAll);
-            });
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
+                        pattern: "{controller}/{action=Index}/{id?}");
                 endpoints.MapGet("/", async context =>
                 {
                     await context.Response.WriteAsync("Welcome to running ASP.NET Core on AWS Lambda");
                 });
             });
-
-
-
         }
     }
 }
