@@ -1,6 +1,6 @@
 using System;
 
-namespace SignedURL
+namespace AWSServerless
 {
     public class WeatherForecast
     {

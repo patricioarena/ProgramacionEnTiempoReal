@@ -1,25 +1,22 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using SignedURL.Config;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace SignedURL
+namespace AWSServerless
 {
     public class Startup
     {
         readonly string AllowAll = "_allowAll";
-
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
@@ -28,19 +25,20 @@ namespace SignedURL
             .SetBasePath(env.ContentRootPath)
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .AddConfiguration(configuration)
-            .AddUserSecrets<AWS>()
+            .AddUserSecrets<Options>()
             .AddEnvironmentVariables();
 
             Configuration = builder.Build();
+
         }
 
-        public IConfiguration Configuration { get; }
+        public static IConfiguration Configuration { get; private set; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        // This method gets called by the runtime. Use this method to add services to the container
         public void ConfigureServices(IServiceCollection services)
         {
 #pragma warning disable ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
-            services.Configure<AWS>(Configuration.GetSection(nameof(AWS)))
+            services.Configure<Options>(Configuration.GetSection(nameof(Options)))
                 .AddOptions()
                 .BuildServiceProvider();
 #pragma warning restore ASP0000 // Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'
@@ -48,7 +46,7 @@ namespace SignedURL
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "SignedURL", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "AWSServerless", Version = "v1" });
             });
 
             services.AddCors(options =>
@@ -64,16 +62,9 @@ namespace SignedURL
                     });
             });
 
-            services.AddControllersWithViews();
-
-            // In production, the React files will be served from this directory
-            services.AddSpaStaticFiles(configuration =>
-            {
-                configuration.RootPath = "ClientApp/build";
-            });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -89,9 +80,9 @@ namespace SignedURL
                 app.UseHsts();
             }
 
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseSpaStaticFiles();
 
             app.UseRouting();
 
@@ -107,15 +98,17 @@ namespace SignedURL
                     .RequireCors(AllowAll);
             });
 
-            app.UseSpa(spa =>
+            app.UseEndpoints(endpoints =>
             {
-                spa.Options.SourcePath = "ClientApp";
-
-                if (env.IsDevelopment())
+                endpoints.MapControllers();
+                endpoints.MapGet("/", async context =>
                 {
-                    spa.UseReactDevelopmentServer(npmScript: "start");
-                }
+                    await context.Response.WriteAsync("Welcome to running ASP.NET Core on AWS Lambda");
+                });
             });
+
+
+
         }
     }
 }

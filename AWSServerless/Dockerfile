@@ -7,14 +7,14 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
-COPY ["SignedURL/SignedURL.csproj", "SignedURL/"]
+COPY ["AWSServerless/AWSServerless.csproj", "SignedURL/"]
 RUN dotnet restore "SignedURL/SignedURL.csproj"
 COPY . .
-WORKDIR "/src/SignedURL"
-RUN dotnet build "SignedURL.csproj" -c Release -o /app/build
+WORKDIR "/src/AWSServerless"
+RUN dotnet build "AWSServerless.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "SignedURL.csproj" -c Release -o /app/publish
+RUN dotnet publish "AWSServerless.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
