@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AWSServerless.Controllers
 {
     [Route("api/[controller]")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class ValuesController : ControllerBase
     {
         // GET api/values

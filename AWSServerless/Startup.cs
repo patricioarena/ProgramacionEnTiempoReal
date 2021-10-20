@@ -76,18 +76,30 @@ namespace AWSServerless
             }
 
             string swaggerActive = Environment.GetEnvironmentVariable("swaggerActive");
-            bool flag = bool.Parse(swaggerActive);
+            string swaggerActiveAWS = Environment.GetEnvironmentVariable("swaggerActiveAWS");
+            bool flag1 = bool.Parse(swaggerActive);
+            bool flag2 = bool.Parse(swaggerActiveAWS);
 
-            string auxUri = "";
+            string swaggerUrl = "";
+            string swaggerJSON = "";
 
-            if (flag.Equals(true))
+
+            if (flag1.Equals(true))
             {
-                app.UseSwagger();
-                if (env.IsProduction())
+                if (flag2)
                 {
-                    auxUri = "Prod";
+                    swaggerUrl = Environment.GetEnvironmentVariable("swaggerUrl");
+                    swaggerJSON = Environment.GetEnvironmentVariable("swaggerJSON");
                 }
-                app.UseSwaggerUI(c => c.SwaggerEndpoint(@$"{auxUri}/swagger/v1/swagger.json", "AWSServerless v1"));
+                else
+                {
+                    swaggerUrl = "/swagger/index.html";
+                    swaggerJSON = "/swagger/v1/swagger.json";
+                }
+
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint(swaggerJSON, "AWSServerless v1"));
+                /// Prod / swagger / v1 / swagger.json
             }
 
             app.UseHttpsRedirection();
@@ -170,7 +182,7 @@ namespace AWSServerless
                                 scripta ocurreret qui ad.</span>
                         </div>
                         <div class=''>
-                            <a href='{auxUri}/swagger/index.html'>Learn More</a>
+                            <a href='{swaggerUrl}'>Learn More</a>
                         </div>
                     </div>
                 </div>

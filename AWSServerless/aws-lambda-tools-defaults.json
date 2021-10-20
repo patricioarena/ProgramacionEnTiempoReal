@@ -13,6 +13,6 @@
     "s3-prefix"     : "AWSServerless/",
     "template"      : "serverless.template",
     "template-parameters" : "",
-    "s3-bucket"           : "mylambdatestfuntion",
-    "stack-name"          : "myLambdaTestFuntion"
+    "s3-bucket"           : "ptr-reconocimiento-de-voz",
+    "stack-name"          : "prt-lambda"
 }
