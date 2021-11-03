@@ -1,8 +1,13 @@
+import logo from './img/Logo-UNAJ.png';
+import sound from './img/sound.gif';
+import './App.css';
 import React from 'react';
 import { EventStreamMarshaller } from '@aws-sdk/eventstream-marshaller';
 import { toUtf8, fromUtf8 } from '@aws-sdk/util-utf8-node';
 import mic from 'microphone-stream';
 import Axios from 'axios';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const sampleRate = 44100;
 const eventStreamMarshaller = new EventStreamMarshaller(toUtf8, fromUtf8);
@@ -11,6 +16,7 @@ const eventStreamMarshaller = new EventStreamMarshaller(toUtf8, fromUtf8);
 export default () => {
   const [webSocket, setWebSocket] = React.useState();
   const [inputSampleRate, setInputSampleRate] = React.useState();
+  const [text,setText] = React.useState("");
 
   const streamAudioToWebSocket = async (userMediaStream) => {
     const micStream = new mic();
@@ -21,7 +27,7 @@ export default () => {
 
     micStream.setStream(userMediaStream);
 
-    const url = await Axios.post('http://localhost:3016/url');
+    const url = await Axios.post(process.env.REACT_APP_AWS_URL_TRANS);
 
     const socket = new WebSocket(url.data);
     socket.binaryType = 'arraybuffer';
@@ -138,6 +144,7 @@ export default () => {
     if (results.length > 0) {
       if (results[0].Alternatives.length > 0) {
         const transcript = decodeURIComponent(escape(results[0].Alternatives[0].Transcript));
+        setText(transcript);
         if (!results[0].IsPartial) {
           const text = transcript.toLowerCase().replace('.', '').replace('?', '').replace('!', '');
           console.log(text);
@@ -147,6 +154,7 @@ export default () => {
   };
 
   const start = () => {
+    setText("");
     window.navigator.mediaDevices
       .getUserMedia({
         video: false,
@@ -168,7 +176,24 @@ export default () => {
 
   return (
     <div className="App">
-      <button onClick={() => (webSocket ? stop(webSocket) : start())}>{webSocket ? 'Stop' : 'Start'}</button>
+      <div>
+        <img src={logo} alt='UNAJ'/>
+      </div>
+      <div className="container">
+        <h1>Transcription App</h1>
+        <button className="button" onClick={() => (webSocket ? stop(webSocket) : start())}>
+          <div className="cir-container">
+            <div className={webSocket ? "cuadrado" : "triangulo"}></div>
+          </div>
+        </button>
+        <div className="sound-container">
+          {webSocket ? <img src={sound} alt="sound" className="sound"/> : <></>}
+        </div>
+      </div>
+      <div className="text-container">
+        <h2>Text</h2>
+        <p>{text}</p>
+      </div>
     </div>
   );
 };
